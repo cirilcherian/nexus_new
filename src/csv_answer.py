@@ -33,6 +33,7 @@ def csv_answer(query,documentid):
         agent = create_pandas_dataframe_agent(ChatOpenAI(temperature=0,model="gpt-4-turbo"), df, verbose=True)
         # question = query
         prompt = """If the result of the operation is an image,make sure avoiding plt.show() but save it as a PNG file in the current working directory.if one task encountered error please mention that cause of error in text format"""
+        # prompt = """if the operation yields multiple images,or a single image convert those images in to a single PNG file,make sure avoiding plt.show() but save it as a PNG file in current working directory."""
         response = agent(query+prompt)
         image_paths = get_image_paths()
         # print(image_paths)

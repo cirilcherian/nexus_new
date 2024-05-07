@@ -44,7 +44,7 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
         search_type = "similarity",
         search_kwargs = {
             "k": 20,
-            "score_threshold": 0.77,
+            "score_threshold": 0.8,
             "pre_filter" : {"spacename":spacename}
             })
     
@@ -100,16 +100,20 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
     # prompt = """analyse the question.if it is a greeting type question make answers for the greeting.if it is not a greeting type question and context is not there give answer as "you are not allowed to access the database or the data is not in the database".Else give the answers only from the context with out fabricating anything other than from context"""
 
 
-    prompt = """You're an expert in crafting responses solely from the question and context. 
-                For greeting type questions make answers accordingly.
-                For question "who are you" respond as "I am an expert in making answers for the questions from companies documents."
-                For question "Can you help me" respond as "Yes,I can help you,please ask the question".
-                If the context is empty and the question is not greeting type answer must be "you are not allowed to access this data or it is not available in the database".
-                Else give answers only from the context dont fabricate anything other than the context.understand above guidelines and follow it strictly for the following question, """
+    # prompt = """You're an expert in crafting responses solely from the question and context. 
+    #             For greeting type questions make answers accordingly.
+    #             For question "who are you" respond as "I am an expert in making answers for the questions from companies documents."
+    #             For question "Can you help me" respond as "Yes,I can help you,please ask the question".
+    #             For question is non greeting type and context is empty respond as "You are not allowed to access this data or the data is not available in the database".
+    #             Give answers only from the context don't fabricate anything other than the context.understand above guidelines and follow it strictly for the following question, """
 
-
-
-    # prompt = """You are an expert in categorizing and making precise answers from the questions. Follow the guidelines properly before making answers.
+    prompt = """You excel in providing responses based solely on questions and context. Here are the guidelines to follow:
+                    - For greeting-type questions, craft appropriate responses.
+                    - When asked "who are you," reply with "I am an expert in crafting responses based on company documents."
+                    - If asked "Can you help me," answer with "Yes, I can assist you. Please ask your question."
+                    - For non-greeting questions with an empty context, respond with "You are not permitted to access this data, or the data is unavailable in the database."
+                Give answers only from the context; don't fabricate anything other than what's provided. Understand the above guidelines and follow them strictly for the following question.
+            """
 
     #     a) Greeting type examples: 'hi,' 'hai,' 'Hello,' 'Can you help me,' etc.
     #     b) Non-greeting type example: 'What is SQL.'
@@ -160,7 +164,7 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
             
     else:
         output1 = retrieval_chain1.invoke({"input": prompt + query })
-        print(output1)
+        print(len(output1['context']))
         answer = HTMLFormatter(output1["answer"])
         return answer
 

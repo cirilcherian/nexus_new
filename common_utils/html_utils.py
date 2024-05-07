@@ -31,6 +31,8 @@ def generate_html_output(text_output=None, image_paths=None):
         # If text output is provided, wrap it in <p> tags
         
 
+
+
         # If image paths are provided, encode image data and embed them in the HTML
         if image_paths:
             for image_path in image_paths:
@@ -41,13 +43,15 @@ def generate_html_output(text_output=None, image_paths=None):
                 # os.remove(image_path)
                 html_output += f"<img src='data:image/png;base64,{image_data}' alt={filename}>"
 
-
+                print(image_path)
                 # Delete the image file
                 os.remove(image_path)
                 print(f"Image file '{image_path}' deleted successfully.")
+
         if text_output and image_paths==None:
             html_output += f"{text_output}"
             html_output = HTMLFormatter(html_output)
+        
 
         return html_output
     except Exception as exe:
