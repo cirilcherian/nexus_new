@@ -10,6 +10,10 @@ from common_utils.HTMLFormatterAI import HTMLFormatter
 
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+# from langchain_core.messages import AIMessage, HumanMessage
+# from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+# from langchain_core.runnables.history import RunnableWithMessageHistory
+# from langchain.memory import ChatMessageHistory
 # import getpass
 # import os
 
@@ -50,13 +54,24 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
     
 
 
+
+
     retriever_for_filecheck = vector_search.as_retriever(
         search_type = "similarity",
         search_kwargs = {
-            "k": 1,
-            "score_threshold": 0.9,
-            "pre_filter" : {"spacename":spacename}
+            "k": 5,
+            "score_threshold": 1,
+            "pre_filter" : {"spacename":spacename},
+            "post_filter":{"$sort":{"score":+1}}
             })
+
+    # retriever_for_filecheck = vector_search.as_retriever(
+    #     search_type = "similarity",
+    #     search_kwargs = {
+    #         "k": 1,
+    #         "score_threshold": 1,
+    #         "pre_filter" : {"spacename":spacename}
+    #         })
     # print(retriever)
     
 
@@ -107,13 +122,15 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
     #             For question is non greeting type and context is empty respond as "You are not allowed to access this data or the data is not available in the database".
     #             Give answers only from the context don't fabricate anything other than the context.understand above guidelines and follow it strictly for the following question, """
 
-    prompt = """You excel in providing responses based solely on questions and context. Here are the guidelines to follow:
+    prompt= """You excel in providing responses based solely on questions and context. Here are the guidelines to follow:
                     - For greeting-type questions, craft appropriate responses.
                     - When asked "who are you," reply with "I am an expert in crafting responses based on company documents."
                     - If asked "Can you help me," answer with "Yes, I can assist you. Please ask your question."
                     - For non-greeting questions with an empty context, respond with "You are not permitted to access this data, or the data is unavailable in the database."
                 Give answers only from the context; don't fabricate anything other than what's provided. Understand the above guidelines and follow them strictly for the following question.
             """
+    
+
 
     #     a) Greeting type examples: 'hi,' 'hai,' 'Hello,' 'Can you help me,' etc.
     #     b) Non-greeting type example: 'What is SQL.'
@@ -150,8 +167,27 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
     # print(output['context'])
     file_name = ""
     try:
-        file_name = output['context'][0].metadata['filename']
-        document_id = output['context'][0].metadata['documentid']
+
+        ##############################################
+        l = len(output['context'])
+        list1 = []
+        for i in range(l):
+            print(output['context'][i].metadata['filename'])
+            list1.append((output['context'][i].metadata['filename']).lower())
+        # print(list1)
+        for i in range(len(list1)):
+            if list1[i] in query.lower():
+                file_name = list1[i]
+                document_id = output['context'][i].metadata['documentid']
+                break
+            else:
+                file_name = output['context'][0].metadata['filename']
+                document_id = output['context'][0].metadata['documentid']
+
+        #################################################
+        
+        print(file_name)
+        print(document_id)
     except:
         pass
     if file_name.endswith('.csv') and output['context'] != []:

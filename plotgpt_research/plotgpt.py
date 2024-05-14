@@ -5,7 +5,7 @@ from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain.llms import OpenAI
 import matplotlib.image as mpimg
 # from langchain_openai import OpenAI
-from langchain_community.llms import OpenAI
+# from langchain_community.llms import OpenAI
 import base64
 
 

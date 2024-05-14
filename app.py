@@ -86,7 +86,7 @@ def upload_file():
             try:
                 ingest_main(file_path, metadata)
             except:
-                ingest_main1(file_path,metadata)
+                ingest_main1(file_path, metadata)
         except Exception as exe:
             print("an error occured "+str(exe))
 
