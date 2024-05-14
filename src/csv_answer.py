@@ -30,7 +30,7 @@ def csv_answer(query,documentid):
         with open(output_file_path, "wb") as output_file:
                 output_file.write(file_data_binary)
         df = pd.read_csv(output_file_path, encoding='latin-1')
-        print(df.head())
+        # print(df.head())
         agent = create_pandas_dataframe_agent(ChatOpenAI(temperature=0,model="gpt-4-turbo"), df, verbose=True)
         # question = query
         prompt = """If the result of the operation is an image,make sure avoiding plt.show() but save it as a PNG file in the current working directory also give a short description about image."""

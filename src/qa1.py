@@ -47,8 +47,8 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
     retriever_answer = vector_search.as_retriever(
         search_type = "similarity",
         search_kwargs = {
-            "k": 20,
-            "score_threshold": 0.8,
+            "k": 25,
+            "score_threshold": 0.75,
             "pre_filter" : {"spacename":spacename}
             })
     
