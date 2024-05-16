@@ -10,6 +10,7 @@ from common_utils.HTMLFormatterAI import HTMLFormatter
 
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.retrievers import MergerRetriever
 # from langchain_core.messages import AIMessage, HumanMessage
 # from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 # from langchain_core.runnables.history import RunnableWithMessageHistory
@@ -44,26 +45,34 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
     #     })
     # print(docsearch)
     # vector_search.similarity_search_with_score
-    retriever_answer = vector_search.as_retriever(
-        search_type = "similarity",
-        search_kwargs = {
-            "k": 25,
-            "score_threshold": 0.75,
-            "pre_filter" : {"spacename":spacename}
-            })
-    
+    retrievers_answer = []
+    retrievers_for_filecheck = []
+    for space in spacename:
+        retriever_answer = vector_search.as_retriever(
+            search_type = "similarity",
+            search_kwargs = {
+                "k": 25,
+                "score_threshold": 0.75,
+                "pre_filter" : {"spacename":space}
+                })
+        
+        retrievers_answer.append(retriever_answer)
+        
+        # print(retriever_answer)
 
 
 
-
-    retriever_for_filecheck = vector_search.as_retriever(
-        search_type = "similarity",
-        search_kwargs = {
-            "k": 5,
-            "score_threshold": 1,
-            "pre_filter" : {"spacename":spacename},
-            "post_filter":{"$sort":{"score":+1}}
-            })
+        retriever_for_filecheck = vector_search.as_retriever(
+            search_type = "similarity",
+            search_kwargs = {
+                "k": 5,
+                "score_threshold": 1,
+                "pre_filter" : {"spacename":space},
+                "post_filter":{"$sort":{"score":+1}}
+                })
+        retrievers_for_filecheck.append(retriever_for_filecheck)
+    combined_retrievers_answer = MergerRetriever(retrievers=retrievers_answer)
+    combined_retrievers_for_filecheck = MergerRetriever(retrievers=retrievers_for_filecheck)
 
     # retriever_for_filecheck = vector_search.as_retriever(
     #     search_type = "similarity",
@@ -109,8 +118,11 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
 
     retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
     combine_docs_chain = create_stuff_documents_chain(model,retrieval_qa_chat_prompt)
-    retrieval_chain1 = create_retrieval_chain(retriever_answer,combine_docs_chain)
-    retrieval_chain2 = create_retrieval_chain(retriever_for_filecheck,combine_docs_chain)
+    # retrieval_chain1 = create_retrieval_chain(retriever_answer,combine_docs_chain)
+    retrieval_chain1 = create_retrieval_chain(combined_retrievers_answer,combine_docs_chain)
+    # print(retrieval_chain1)
+    # retrieval_chain2 = create_retrieval_chain(retriever_for_filecheck,combine_docs_chain)
+    retrieval_chain2 = create_retrieval_chain(combined_retrievers_for_filecheck,combine_docs_chain)
 
     # prompt = """analyse the question.if it is a greeting type question make answers for the greeting.if it is not a greeting type question and context is not there give answer as "you are not allowed to access the database or the data is not in the database".Else give the answers only from the context with out fabricating anything other than from context"""
 
@@ -186,8 +198,8 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
 
         #################################################
         
-        print(file_name)
-        print(document_id)
+        # print(file_name)
+        # print(document_id)
     except:
         pass
     if file_name.endswith('.csv') and output['context'] != []:

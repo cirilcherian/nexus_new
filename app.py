@@ -55,7 +55,7 @@ def upload_file():
         metadata = {
             'documentid': doc_id,
             'filename': filename,
-            'spacename': space_name,
+            'spacename': [space_name],
             'spaceid':space_id,
             'uploadername': uploader_name,
             "updateddate" : updated_time
@@ -84,9 +84,9 @@ def upload_file():
     if '.' in filename and filename.rsplit('.', 1)[1].lower() in "pdf":
         try:
             try:
-                ingest_main(file_path, metadata)
-            except:
                 ingest_main1(file_path, metadata)
+            except:
+                ingest_main(file_path, metadata)
         except Exception as exe:
             print("an error occured "+str(exe))
 
@@ -158,6 +158,6 @@ if __name__ == '__main__':
     # Create the upload folder if it doesn't exist
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
-    app.run(debug=True, host="0.0.0.0", port = 5066)
+    app.run(debug=False, host="0.0.0.0", port = 5066)
 
 

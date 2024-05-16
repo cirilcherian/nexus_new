@@ -171,7 +171,7 @@ def ingest_main1(file_path,metadata):
 
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         texts = text_splitter.split_documents(documents)
-        metadata["spacename"].append("Super Admin")
+        # metadata["spacename"].append("Super Admin")
         # print(metadata)
         for text in texts:
             text.metadata =metadata

@@ -45,3 +45,4 @@ langchain_experimental
 pandas
 tabulate
 matplotlib
+gunicorn==20.1.0
