@@ -26,7 +26,7 @@ def ingest_csv(file_path,metadata):
     
         # df = pd.read_csv(file_path)
         df = pd.read_csv(file_path, encoding='latin-1')
-        agent = create_pandas_dataframe_agent(ChatOpenAI(temperature=0.5,model="gpt-4-turbo"), df, verbose=True)
+        agent = create_pandas_dataframe_agent(ChatOpenAI(temperature=0.5,model="gpt-4o"), df, verbose=True)
         question = "Analyse the data frame and explain it.mention all the column names"
         # print(agent.get_prompts)
         try:

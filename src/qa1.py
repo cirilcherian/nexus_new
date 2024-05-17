@@ -10,7 +10,12 @@ from common_utils.HTMLFormatterAI import HTMLFormatter
 
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.retrievers import MergerRetriever
+from langchain.retrievers import MergerRetriever,ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import DocumentCompressorPipeline
+from langchain_community.document_transformers import EmbeddingsRedundantFilter
+from langchain_openai import OpenAIEmbeddings
+
+
 # from langchain_core.messages import AIMessage, HumanMessage
 # from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 # from langchain_core.runnables.history import RunnableWithMessageHistory
@@ -71,8 +76,26 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
                 "post_filter":{"$sort":{"score":+1}}
                 })
         retrievers_for_filecheck.append(retriever_for_filecheck)
+    #merging all the retrievers
     combined_retrievers_answer = MergerRetriever(retrievers=retrievers_answer)
     combined_retrievers_for_filecheck = MergerRetriever(retrievers=retrievers_for_filecheck)
+    filter_embeddings = OpenAIEmbeddings(api_key=Config.OPENAI_API_KEY)
+    # We can remove redundant results from both retrievers using yet another embedding.
+    # Using multiples embeddings in diff steps could help reduce biases.
+    #remove the redundant results from retrievers
+    filter = EmbeddingsRedundantFilter(embeddings=filter_embeddings)
+    pipeline = DocumentCompressorPipeline(transformers=[filter])
+
+
+    compression_retriever_answer = ContextualCompressionRetriever(
+        base_compressor=pipeline, base_retriever=combined_retrievers_answer
+        )
+    
+
+
+    compression_retriever_filecheck = ContextualCompressionRetriever(
+        base_compressor=pipeline, base_retriever=combined_retrievers_for_filecheck
+        )
 
     # retriever_for_filecheck = vector_search.as_retriever(
     #     search_type = "similarity",
@@ -114,15 +137,15 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
 
 
 
-
+    #creating the chain
 
     retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
     combine_docs_chain = create_stuff_documents_chain(model,retrieval_qa_chat_prompt)
     # retrieval_chain1 = create_retrieval_chain(retriever_answer,combine_docs_chain)
-    retrieval_chain1 = create_retrieval_chain(combined_retrievers_answer,combine_docs_chain)
+    retrieval_chain1 = create_retrieval_chain(compression_retriever_answer,combine_docs_chain)
     # print(retrieval_chain1)
     # retrieval_chain2 = create_retrieval_chain(retriever_for_filecheck,combine_docs_chain)
-    retrieval_chain2 = create_retrieval_chain(combined_retrievers_for_filecheck,combine_docs_chain)
+    retrieval_chain2 = create_retrieval_chain(compression_retriever_filecheck,combine_docs_chain)
 
     # prompt = """analyse the question.if it is a greeting type question make answers for the greeting.if it is not a greeting type question and context is not there give answer as "you are not allowed to access the database or the data is not in the database".Else give the answers only from the context with out fabricating anything other than from context"""
 
@@ -249,4 +272,3 @@ if __name__ == '__main__':
     # Create the upload folder if it doesn't exist
     answer = qa(" issues for congress","datascience")
     print(answer)
-    
