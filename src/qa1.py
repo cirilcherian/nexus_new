@@ -57,7 +57,7 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
             search_type = "similarity",
             search_kwargs = {
                 "k": 25,
-                "score_threshold": 0.75,
+                "score_threshold": 0.8,
                 "pre_filter" : {"spacename":space}
                 })
         
@@ -157,13 +157,34 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
     #             For question is non greeting type and context is empty respond as "You are not allowed to access this data or the data is not available in the database".
     #             Give answers only from the context don't fabricate anything other than the context.understand above guidelines and follow it strictly for the following question, """
 
-    prompt= """You excel in providing responses based solely on questions and context. Here are the guidelines to follow:
-                    - For greeting-type questions, craft appropriate responses.
-                    - When asked "who are you," reply with "I am an expert in crafting responses based on company documents."
+    prompt= """You are an expert and excel in providing responses based solely on questions and context. Here are the guidelines to follow:
+                    - For greeting-type questions, craft appropriate responses.example for greeting type questions are hello,how are you,hai,hi etc.
+                    - When question is specifically "who are you," reply with "I am an expert in crafting responses based on company documents."
                     - If asked "Can you help me," answer with "Yes, I can assist you. Please ask your question."
-                    - For non-greeting questions with an empty context, respond with "You are not permitted to access this data, or the data is unavailable in the database."
+                    - For non-greeting questions with an empty context, respond with "You are not permitted to access this data, or the data is unavailable in the database".When answering avoid prefacing text in the answer.
                 Give answers only from the context; don't fabricate anything other than what's provided. Understand the above guidelines and follow them strictly for the following question.
             """
+    
+    # prompt = """You are an expert and excel in providing responses based solely on questions and context. Here are the guidelines to follow:
+
+    #                 - For greeting-type questions, craft appropriate responses. Examples of greeting-type questions are: hello, how are you, hi, etc.
+    #                 - When the question is specifically "who are you," reply with "I am an expert in crafting responses based on company documents."
+    #                 - If asked "Can you help me," answer with "Yes, I can assist you. Please ask your question."
+    #                 - For non-greeting questions with an empty context, respond with "You are not permitted to access this data, or the data is unavailable in the database."
+    #                 - Give answers only from the context; don't fabricate anything other than what's provided.
+    #             Understand the above guidelines and follow them strictly for the following question.
+    #         """
+
+
+
+    # prompt = """You are an expert and excel in providing responses based solely on questions and context. Here are the guidelines to follow:
+
+    #                 - For greeting-type questions, craft appropriate responses. Examples of greeting-type questions are: hello, how are you, hi, etc.
+    #                 - When the question is specifically "who are you," reply with "I am an expert in crafting responses based on company documents."
+    #                 - If asked "Can you help me," answer with "Yes, I can assist you. Please ask your question."
+    #                 - For non-greeting questions with an empty context, respond only with "You are not permitted to access this data, or the data is unavailable in the database."
+    #                 - Give answers only from the context; don't fabricate anything other than what's provided.
+    #                 - Understand the above guidelines and follow them strictly for the following question. """
     
 
 
@@ -236,6 +257,7 @@ def qa(query,spacename,search_kwargs: Dict [Any, Any] = {}):
     else:
         output1 = retrieval_chain1.invoke({"input": prompt + query })
         print(len(output1['context']))
+        print(output1['context'])
         answer = HTMLFormatter(output1["answer"])
         return answer
 
